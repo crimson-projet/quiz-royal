@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Royale - AI Edition</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #0d0306; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { background: rgba(20, 4, 4, 0.93); border: 2px solid rgba(170, 100, 0, 0.6); border-radius: 16px; padding: 25px; width: 100%; max-width: 500px; box-shadow: 0 0 25px rgba(221, 136, 34, 0.3); }
+        h1 { color: #ffcc66; text-align: center; margin-bottom: 20px; font-size: 24px; text-shadow: 0 0 10px rgba(221, 136, 34, 0.5); }
+        .category-select { display: flex; gap: 10px; margin-bottom: 15px; }
+        .category-select input { flex: 1; background: #1a0508; border: 1px solid #cc8800; color: #fff; padding: 10px; border-radius: 8px; font-size: 14px; }
+        .stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; color: #aa7755; font-weight: 600; }
+        .question-box { background: rgba(30, 10, 10, 0.8); border: 1px solid rgba(170, 100, 0, 0.4); border-radius: 10px; padding: 15px; margin-bottom: 20px; font-size: 16px; min-height: 80px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .options { display: flex; flex-direction: column; gap: 10px; }
+        .btn { background: #220011; border: 1px solid #cc8800; color: #ffcc66; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; transition: all 0.2s ease; text-align: left; }
+        .btn:hover:not(:disabled) { background: #aa5500; color: #fff; transform: translateY(-2px); box-shadow: 0 0 10px rgba(204, 136, 0, 0.5); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .timer { text-align: center; margin-top: 15px; font-size: 14px; color: #dd5566; font-weight: bold; }
+        .hidden { display: none; }
+        .loader { text-align: center; padding: 30px; color: #ffcc66; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎯 QUIZ ROYALE AI</h1>
+        
+        <div class="category-select">
+            <input type="text" id="category-input" value="Culture Générale" placeholder="Thème (ex: Football, Anime...)">
+            <button class="btn" style="padding: 10px 15px;" onclick="fetchNewQuestion()">🔄 Changer</button>
+        </div>
+
+        <div id="loading" class="loader">L'IA génère une question... 🤖</div>
+
+        <div id="quiz-content" class="hidden">
+            <div class="stats">
+                <span id="score-badge">Score: 0</span>
+                <span id="streak-badge">Série: 🔥 0</span>
+            </div>
+
+            <div class="question-box" id="question-text">
+                Chargement...
+            </div>
+
+            <div class="options" id="options-container"></div>
+
+            <div class="timer" id="timer-text">Temps restant : 30s</div>
+        </div>
+    </div>
+
+    <script>
+        const AI_API_URL = 'https://christus-s-apis.vercel.app/api/na/ai/gemini';
+        
+        let currentData = null;
+        let score = 0;
+        let streak = 0;
+        let timer = null;
+        let timeLeft = 30;
+
+        async function fetchNewQuestion() {
+            clearInterval(timer);
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('quiz-content').classList.add('hidden');
+
+            const category = document.getElementById('category-input').value || "Culture Générale";
+
+            const aiPrompt = `Génère une question de quiz unique sur le thème "${category}". 
+            Réponds STRICTEMENT sous forme d'un objet JSON pur (sans balises markdown autour, juste le texte JSON) avec exactement cette structure :
+            {
+              "question": "L'énoncé de la question",
+              "options": ["Option A", "Option B", "Option C", "Option D"],
+              "answer": "La réponse exacte qui correspond exactement à l'une des 4 options"
+            }`;
+
+            try {
+                const res = await fetch(AI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: aiPrompt })
+                });
+                const jsonRes = await res.json();
+                
+                let rawText = jsonRes?.result?.answer || jsonRes?.result || jsonRes?.answer || "";
+                rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+                
+                currentData = JSON.parse(rawText);
+                displayQuestion(currentData);
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('quiz-content').classList.remove('hidden');
+                startTimer();
+            } catch (err) {
+                console.error("Erreur IA:", err);
+                document.getElementById('loading').innerText = "⚠️ L'IA a séché. Réessaie dans un instant.";
+                setTimeout(fetchNewQuestion, 3000);
+            }
+        }
+
+        function displayQuestion(data) {
+            document.getElementById('question-text').innerText = data.question;
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            data.options.forEach((opt, index) => {
+                const letter = String.fromCharCode(65 + index);
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = `${letter}. ${opt}`;
+                btn.onclick = () => submitAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 30;
+            document.getElementById('timer-text').innerText = `Temps restant : ${timeLeft}s`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-text').innerText = `Temps restant : ${timeLeft}s`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert(`⏰ Temps écoulé ! La bonne réponse était : ${currentData.answer}`);
+                    streak = 0;
+                    document.getElementById('streak-badge').innerText = `Série: 🔥 ${streak}`;
+                    fetchNewQuestion();
+                }
+            }, 1000);
+        }
+
+        function submitAnswer(selected, btnElement) {
+            clearInterval(timer);
+            const buttons = document.querySelectorAll('.options button');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected.trim().toLowerCase() === currentData.answer.trim().toLowerCase()) {
+                score++;
+                streak++;
+                btnElement.style.background = '#005522';
+                alert("🎉 Bonne réponse !");
+            } else {
+                streak = 0;
+                btnElement.style.background = '#550000';
+                alert(`❌ Mauvaise réponse ! C'était : ${currentData.answer}`);
+            }
+
+            document.getElementById('score-badge').innerText = `Score: ${score}`;
+            document.getElementById('streak-badge').innerText = `Série: 🔥 ${streak}`;
+            
+            setTimeout(fetchNewQuestion, 1000);
+        }
+
+        // Lancer la première question
+        fetchNewQuestion();
+    </script>
+</body>
+</html>
