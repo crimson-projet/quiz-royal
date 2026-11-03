@@ -1,7 +1,13 @@
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open('crimson-quiz-v2').then((cache) => { // Passe de v1 à v2 ici
-      return cache.addAll(['./index.html', './manifest.json']);
+    caches.open('crimson-quiz-v3').then((cache) => {
+      return cache.addAll([
+        './',
+        './index.html',
+        './style.css',
+        './app.js',
+        './manifest.json'
+      ]);
     })
   );
 });
