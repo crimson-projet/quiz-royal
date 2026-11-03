@@ -6,36 +6,57 @@
     <title>Quiz Royale - AI Edition</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: radial-gradient(circle at center, #1a080c 0%, #080204 100%); color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-        .container { background: rgba(18, 5, 8, 0.95); border: 2px solid #ffaa00; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 0 30px rgba(255, 170, 0, 0.25); }
+        body { background: radial-gradient(circle at center, #140508 0%, #050102 100%); color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 170, 0, 0.3); padding-bottom: 12px; }
-        h1 { color: #ffcc00; font-size: 20px; text-shadow: 0 0 10px rgba(255, 204, 0, 0.4); }
+        .container { background: rgba(18, 5, 8, 0.95); border: 2px solid #ffaa00; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 0 35px rgba(255, 170, 0, 0.3); display: flex; flex-direction: column; justify-content: space-between; min-height: 520px; position: relative; animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 170, 0, 0.3); padding-bottom: 12px; margin-bottom: 15px; }
+        h1 { color: #ffcc00; font-size: 20px; text-shadow: 0 0 12px rgba(255, 204, 0, 0.5); letter-spacing: 0.5px; }
         .progress-badge { background: #3a1200; border: 1px solid #ffaa00; padding: 5px 12px; border-radius: 20px; font-size: 13px; color: #ffcc00; font-weight: bold; }
 
-        .setup-screen, .quiz-screen, .score-screen { display: flex; flex-direction: column; gap: 15px; }
+        .screen { display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
         .hidden { display: none !important; }
 
-        .input-group { display: flex; gap: 8px; margin-bottom: 5px; }
-        input { flex: 1; background: #0d0305; border: 1px solid #ffaa00; color: #fff; padding: 12px; border-radius: 10px; font-size: 15px; outline: none; }
-        
-        .btn { background: linear-gradient(135deg, #cc8800, #ffaa00); border: none; color: #120305; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 15px; font-weight: bold; transition: 0.2s; text-align: center; box-shadow: 0 4px 15px rgba(255, 170, 0, 0.3); }
-        .btn:active { transform: scale(0.97); }
+        /* Écran d'accueil & configuration */
+        .setup-content { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .setup-content p { color: #cc8855; font-size: 14px; line-height: 1.4; }
 
-        .stats-bar { display: flex; justify-content: space-between; font-size: 13px; color: #cc8855; font-weight: bold; text-transform: uppercase; }
+        /* Barre de recherche fixée en bas */
+        .bottom-bar { display: flex; gap: 8px; margin-top: auto; padding-top: 15px; border-top: 1px solid rgba(255, 170, 0, 0.2); }
+        input { flex: 1; background: #0d0305; border: 1px solid #ffaa00; color: #fff; padding: 12px 15px; border-radius: 12px; font-size: 14px; outline: none; transition: 0.2s; }
+        input:focus { box-shadow: 0 0 10px rgba(255, 170, 0, 0.4); border-color: #ffcc00; }
         
-        .question-box { background: rgba(30, 8, 12, 0.9); border: 1px solid rgba(255, 170, 0, 0.4); border-radius: 12px; padding: 18px; font-size: 16px; text-align: center; min-height: 90px; display: flex; align-items: center; justify-content: center; line-height: 1.4; color: #fff; }
+        .btn { background: linear-gradient(135deg, #cc8800, #ffaa00); border: none; color: #120305; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; text-align: center; box-shadow: 0 4px 15px rgba(255, 170, 0, 0.3); white-space: nowrap; }
+        .btn:active { transform: scale(0.96); }
 
-        .options { display: flex; flex-direction: column; gap: 10px; }
-        .opt-btn { background: #1a060a; border: 1px solid rgba(255, 170, 0, 0.3); color: #ffebcc; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; text-align: left; transition: all 0.2s; }
-        .opt-btn:hover:not(:disabled) { background: #330c14; border-color: #ffaa00; transform: translateY(-2px); }
+        .stats-bar { display: flex; justify-content: space-between; font-size: 13px; color: #cc8855; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; }
+        
+        /* Question avec effet d'écriture */
+        .question-box { background: rgba(30, 8, 12, 0.9); border: 1px solid rgba(255, 170, 0, 0.4); border-radius: 14px; padding: 18px; font-size: 15px; text-align: left; min-height: 95px; display: flex; align-items: center; line-height: 1.5; color: #fff; margin-bottom: 15px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
+        .typing-cursor::after { content: '|'; animation: blink 0.7s infinite; color: #ffaa00; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Choix multiples alignés proprement */
+        .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .opt-btn { background: #1a060a; border: 1px solid rgba(255, 170, 0, 0.3); color: #ffebcc; padding: 13px 15px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; width: 100%; }
+        .opt-btn:hover:not(:disabled) { background: #330c14; border-color: #ffaa00; transform: translateX(4px); }
         .opt-btn.correct { background: #004d26 !important; border-color: #00ff88 !important; color: #fff !important; }
         .opt-btn.wrong { background: #4d0000 !important; border-color: #ff4444 !important; color: #fff !important; }
 
-        .timer-container { height: 6px; background: #2a0a10; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .timer-container { height: 5px; background: #2a0a10; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
         .timer-bar { height: 100%; background: #ffaa00; width: 100%; transition: width 1s linear; }
 
-        .loader { text-align: center; padding: 40px; color: #ffcc00; font-weight: bold; font-size: 16px; }
+        /* Écran de chargement magique */
+        .loader-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; gap: 15px; padding: 30px 0; }
+        .spinner { width: 45px; height: 45px; border: 4px solid rgba(255, 170, 0, 0.2); border-top-color: #ffaa00; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: #ffcc00; font-size: 15px; font-weight: bold; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -46,41 +67,54 @@
             <div class="progress-badge" id="progress-indicator">1 / 10</div>
         </div>
 
-        <!-- Écran de configuration -->
-        <div id="setup-screen" class="setup-screen">
-            <p style="color: #aa7755; font-size: 14px;">Choisis ton thème pour une session de 10 questions générées par l'IA :</p>
-            <div class="input-group">
+        <!-- 1. ÉCRAN CONFIGURATION -->
+        <div id="setup-screen" class="screen">
+            <div class="setup-content">
+                <p>Bienvenue dans l'arène. Tape n'importe quel sujet dans la barre ci-dessous pour lancer une session exclusive de 10 questions générées par l'IA.</p>
+            </div>
+            <div class="bottom-bar">
                 <input type="text" id="category-input" value="Football" placeholder="Ex: Anime, Électronique, Histoire...">
-                <button class="btn" onclick="startQuizSession()">🚀 Go</button>
+                <button class="btn" onclick="startQuizSession()">🚀 Lancer</button>
             </div>
         </div>
 
-        <!-- Écran de chargement -->
-        <div id="loading-screen" class="loader hidden">
-            🤖 L'IA prépare tes 10 questions... Patiente un instant.
-        </div>
-
-        <!-- Écran du Quiz -->
-        <div id="quiz-screen" class="quiz-screen hidden">
-            <div class="stats-bar">
-                <span id="score-text">Score : 0</span>
-                <span id="streak-text">Série : 🔥 0</span>
-            </div>
-
-            <div class="question-box" id="question-text">Chargement...</div>
-
-            <div class="options" id="options-container"></div>
-
-            <div class="timer-container">
-                <div class="timer-bar" id="timer-bar"></div>
+        <!-- 2. ÉCRAN CHARGEMENT AVEC MESSAGE D'ATTENTE -->
+        <div id="loading-screen" class="screen hidden">
+            <div class="loader-screen">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loading-msg">🤖 L'IA analyse et forge tes 10 questions... Patiente un instant.</div>
             </div>
         </div>
 
-        <!-- Écran de fin / Score final -->
-        <div id="score-screen" class="score-screen hidden" style="text-align: center; padding: 20px 0;">
-            <h2 style="color: #ffcc00; font-size: 24px; margin-bottom: 10px;">🏆 Session Terminée !</h2>
-            <p id="final-score-text" style="font-size: 18px; margin-bottom: 20px; color: #fff;"></p>
-            <button class="btn" onclick="resetToSetup()">🔄 Rejouer une partie</button>
+        <!-- 3. ÉCRAN DU QUIZ -->
+        <div id="quiz-screen" class="screen hidden">
+            <div>
+                <div class="stats-bar">
+                    <span id="score-text">Score : 0</span>
+                    <span id="streak-text">Série : 🔥 0</span>
+                </div>
+
+                <div class="question-box" id="question-text">
+                    <span class="typing-cursor" id="typed-question"></span>
+                </div>
+
+                <div class="options" id="options-container"></div>
+            </div>
+
+            <div>
+                <div class="timer-container">
+                    <div class="timer-bar" id="timer-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. ÉCRAN DE FIN -->
+        <div id="score-screen" class="screen hidden" style="justify-content: center; text-align: center; gap: 20px;">
+            <h2 style="color: #ffcc00; font-size: 22px;">🏆 Session Terminée !</h2>
+            <p id="final-score-text" style="font-size: 16px; color: #fff;"></p>
+            <div class="bottom-bar" style="border: none; padding: 0;">
+                <button class="btn" style="width: 100%;" onclick="resetToSetup()">🔄 Rejouer</button>
+            </div>
         </div>
     </div>
 
@@ -94,11 +128,32 @@
         let timer = null;
         let timeLeft = 30;
 
+        const loadingMessages = [
+            "🤖 L'IA rassemble les données et forge tes 10 questions...",
+            "⚡ Connexion aux serveurs neuronaux en cours...",
+            "🔥 Ajustement de la difficulté, prépare-toi...",
+            "✨ Presque prêt, vérification des pièges..."
+        ];
+
+        function showScreen(screenId) {
+            ['setup-screen', 'loading-screen', 'quiz-screen', 'score-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
         async function startQuizSession() {
             const category = document.getElementById('category-input').value.trim() || "Culture Générale";
             
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('loading-screen').classList.remove('hidden');
+            showScreen('loading-screen');
+            
+            // Animation du message d'attente
+            let msgIdx = 0;
+            const msgInterval = setInterval(() => {
+                msgIdx = (msgIdx + 1) % loadingMessages.length;
+                const el = document.getElementById('loading-msg');
+                if(el) el.innerText = loadingMessages[msgIdx];
+            }, 2500);
 
             const prompt = `Génère exactement 10 questions de quiz uniques sur le thème "${category}". 
             Réponds STRICTEMENT sous forme d'un tableau JSON pur (sans markdown, ni balises ```json ... ```), contenant 10 objets avec cette structure exacte :
@@ -120,15 +175,16 @@
                 let rawText = data?.result?.answer || data?.result || data?.answer || "";
                 rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
 
+                clearInterval(msgInterval);
                 questionsList = JSON.parse(rawText);
                 currentIndex = 0;
                 score = 0;
                 streak = 0;
 
-                document.getElementById('loading-screen').classList.add('hidden');
-                document.getElementById('quiz-screen').classList.remove('hidden');
+                showScreen('quiz-screen');
                 loadQuestion();
             } catch (err) {
+                clearInterval(msgInterval);
                 console.error("Erreur génération:", err);
                 alert("Erreur de génération par l'IA. Réessaie.");
                 resetToSetup();
@@ -143,9 +199,23 @@
 
             const q = questionsList[currentIndex];
             document.getElementById('progress-indicator').innerText = `${currentIndex + 1} / ${questionsList.length}`;
-            document.getElementById('question-text').innerText = q.question;
             document.getElementById('score-text').innerText = `Score : ${score}`;
             document.getElementById('streak-text').innerText = `Série : 🔥 ${streak}`;
+
+            // Effet d'écriture style ChatGPT
+            const target = document.getElementById('typed-question');
+            target.innerText = "";
+            let i = 0;
+            const fullText = q.question;
+            
+            function typeWriter() {
+                if (i < fullText.length) {
+                    target.innerText += fullText.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 15);
+                }
+            }
+            typeWriter();
 
             const container = document.getElementById('options-container');
             container.innerHTML = '';
@@ -193,7 +263,6 @@
             } else {
                 streak = 0;
                 btnElement.classList.add('wrong');
-                // Montrer la bonne réponse
                 buttons.forEach(b => {
                     if (b.innerText.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
                         b.classList.add('correct');
@@ -226,15 +295,13 @@
         }
 
         function endSession() {
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('score-screen').classList.remove('hidden');
+            showScreen('score-screen');
             document.getElementById('progress-indicator').innerText = 'Terminé';
             document.getElementById('final-score-text').innerText = `Tu as obtenu ${score} / ${questionsList.length} bonnes réponses !`;
         }
 
         function resetToSetup() {
-            document.getElementById('score-screen').classList.add('hidden');
-            document.getElementById('setup-screen').classList.remove('hidden');
+            showScreen('setup-screen');
             document.getElementById('progress-indicator').innerText = '1 / 10';
         }
     </script>
