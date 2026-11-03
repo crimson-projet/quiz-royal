@@ -6,63 +6,7 @@
     <title>CRIMSON QUIZ</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ff1a40">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background: radial-gradient(circle at center, #180205 0%, #050001 100%); color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; }
-        
-        .container { background: rgba(15, 2, 4, 0.96); border: 2px solid #ff1a40; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 0 40px rgba(255, 26, 64, 0.25); display: flex; flex-direction: column; justify-content: space-between; min-height: 550px; position: relative; }
-        
-        .screen { display: flex; flex-direction: column; flex: 1; justify-content: space-between; opacity: 0; transform: translateY(15px) scale(0.98); transition: opacity 0.4s ease, transform 0.4s ease; pointer-events: none; }
-        .screen.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-        .hidden { display: none !important; }
-
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 26, 64, 0.3); padding-bottom: 12px; margin-bottom: 15px; }
-        h1 { color: #ff3355; font-size: 20px; text-shadow: 0 0 12px rgba(255, 51, 85, 0.5); letter-spacing: 0.5px; }
-        .progress-badge { background: #3a000a; border: 1px solid #ff1a40; padding: 5px 12px; border-radius: 20px; font-size: 13px; color: #ff6680; font-weight: bold; }
-
-        .setup-content { display: flex; flex-direction: column; gap: 12px; margin-top: 5px; }
-        .setup-content label { color: #ff6680; font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: -6px; }
-        .setup-content p { color: #aa7780; font-size: 13px; line-height: 1.4; margin-bottom: 5px; }
-
-        .mode-selector { display: flex; gap: 10px; margin-bottom: 5px; }
-        .mode-btn { flex: 1; background: #0a0102; border: 1px solid #ff1a40; color: #aa7780; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: bold; text-align: center; transition: 0.2s; }
-        .mode-btn.selected { background: #3a000a; color: #ff3355; border-color: #ff3355; box-shadow: 0 0 10px rgba(255, 51, 85, 0.3); }
-
-        input, select { background: #0a0102; border: 1px solid #ff1a40; color: #fff; padding: 12px 15px; border-radius: 12px; font-size: 14px; outline: none; transition: 0.2s; width: 100%; }
-        input:focus, select:focus { box-shadow: 0 0 12px rgba(255, 26, 64, 0.5); border-color: #ff3355; }
-        
-        .btn { background: linear-gradient(135deg, #cc0033, #ff1a40); border: none; color: #fff; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.2s; text-align: center; box-shadow: 0 4px 15px rgba(255, 26, 64, 0.4); white-space: nowrap; }
-        .btn:active { transform: scale(0.96); }
-        .btn-danger { background: linear-gradient(135deg, #660011, #990022); box-shadow: 0 4px 15px rgba(153, 0, 34, 0.4); font-size: 12px; padding: 6px 12px; border-radius: 8px; }
-
-        .stats-bar { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #aa7780; font-weight: bold; text-transform: uppercase; margin-bottom: 12px; }
-        .player-tag { color: #ff3355; font-weight: bold; }
-
-        .question-box { background: rgba(25, 4, 8, 0.9); border: 1px solid rgba(255, 26, 64, 0.4); border-radius: 14px; padding: 18px; font-size: 15px; text-align: left; min-height: 95px; display: flex; align-items: center; line-height: 1.5; color: #fff; margin-bottom: 15px; box-shadow: inset 0 0 15px rgba(0,0,0,0.6); }
-        .typing-cursor::after { content: '|'; animation: blink 0.7s infinite; color: #ff1a40; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-        .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
-        .opt-btn { background: #1a0307; border: 1px solid rgba(255, 26, 64, 0.3); color: #ffccd5; padding: 13px 15px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; text-align: left; transition: all 0.2s ease; display: flex; align-items: center; width: 100%; }
-        .opt-btn:hover:not(:disabled) { background: #33060f; border-color: #ff1a40; transform: translateX(4px); }
-        .opt-btn.correct { background: #004d26 !important; border-color: #00ff88 !important; color: #fff !important; }
-        .opt-btn.wrong { background: #4d0011 !important; border-color: #ff1a40 !important; color: #fff !important; }
-
-        .timer-container { height: 5px; background: #26050a; border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
-        .timer-bar { height: 100%; background: #ff1a40; width: 100%; transition: width 1s linear; }
-
-        .loader-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; gap: 15px; padding: 30px 0; }
-        .spinner { width: 45px; height: 45px; border: 4px solid rgba(255, 26, 64, 0.2); border-top-color: #ff1a40; border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { color: #ff3355; font-size: 15px; font-weight: bold; min-height: 45px; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
-
-        /* Style du Classement */
-        .leaderboard { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; max-height: 250px; overflow-y: auto; }
-        .rank-item { display: flex; justify-content: space-between; align-items: center; background: #1a0307; border: 1px solid rgba(255, 26, 64, 0.3); padding: 12px 15px; border-radius: 10px; }
-        .rank-item.winner { border-color: #ffcc00; background: rgba(58, 0, 10, 0.8); }
-        .rank-name { font-weight: bold; color: #fff; }
-        .rank-score { font-weight: bold; color: #ff3355; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -72,7 +16,7 @@
             <div class="progress-badge" id="progress-indicator">Config</div>
         </div>
 
-        <!-- 1. ÉCRAN CONFIGURATION (SOLO & LOCAL) -->
+        <!-- ÉCRAN CONFIGURATION -->
         <div id="setup-screen" class="screen active">
             <div class="setup-content">
                 <label>Mode de jeu</label>
@@ -82,7 +26,7 @@
                 </div>
 
                 <div id="local-players-group" class="hidden">
-                    <label>Pseudos des Joueurs (séparés par des virgules)</label>
+                    <label>Pseudos (séparés par des virgules)</label>
                     <input type="text" id="players-input" value="Joueur 1, Joueur 2" placeholder="Ex: Brayan, Seth, Alex">
                 </div>
 
@@ -105,18 +49,18 @@
             </div>
             
             <div style="margin-top: 15px;">
-                <button class="btn" style="width: 100%;" onclick="startQuizSession()">🚀 Lancer la session</button>
+                <button class="btn" onclick="startQuizSession()">🚀 Lancer la session</button>
             </div>
         </div>
 
-        <!-- 2. ÉCRAN TRANSITION JOUEUR (MODE LOCAL) -->
+        <!-- ÉCRAN PASS (MODE LOCAL) -->
         <div id="pass-screen" class="screen hidden" style="justify-content: center; text-align: center; gap: 20px;">
             <h2 style="color: #ff3355; font-size: 22px;">📱 Tour Suivant !</h2>
             <p id="pass-msg" style="font-size: 16px; color: #fff; line-height: 1.5;"></p>
-            <button class="btn" style="width: 100%;" onclick="startCurrentPlayerTurn()">▶️ Je suis prêt !</button>
+            <button class="btn" onclick="startCurrentPlayerTurn()">▶️ Je suis prêt !</button>
         </div>
 
-        <!-- 3. ÉCRAN CHARGEMENT -->
+        <!-- ÉCRAN CHARGEMENT -->
         <div id="loading-screen" class="screen hidden">
             <div class="loader-screen">
                 <div class="spinner"></div>
@@ -124,7 +68,7 @@
             </div>
         </div>
 
-        <!-- 4. ÉCRAN DU QUIZ -->
+        <!-- ÉCRAN DU QUIZ -->
         <div id="quiz-screen" class="screen hidden">
             <div>
                 <div class="stats-bar">
@@ -150,7 +94,7 @@
             </div>
         </div>
 
-        <!-- 5. ÉCRAN CLASSEMENT / FIN -->
+        <!-- ÉCRAN CLASSEMENT / FIN -->
         <div id="score-screen" class="screen hidden" style="justify-content: center; text-align: center; gap: 15px;">
             <h2 style="color: #ff3355; font-size: 22px;" id="end-title">🏆 Session Terminée !</h2>
             <p id="final-score-text" style="font-size: 15px; color: #aa7780;"></p>
@@ -158,253 +102,19 @@
             <div class="leaderboard" id="leaderboard-container"></div>
 
             <div style="padding: 0;">
-                <button class="btn" style="width: 100%;" onclick="resetToSetup()">🔄 Rejouer</button>
+                <button class="btn" onclick="resetToSetup()">🔄 Rejouer</button>
             </div>
         </div>
     </div>
 
+    <script src="app.js"></script>
     <script>
-        const AI_API_URL = 'https://christus-s-apis.vercel.app/api/na/ai/gemini';
-        
-        let currentGameMode = 'solo'; // 'solo' ou 'local'
-        let playersList = [];
-        let currentPlayerIndex = 0;
-        let localScores = []; // [{ name: "Brayan", score: 8 }]
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log("Service Worker OK"))
+          .catch((err) => console.log("Erreur SW:", err));
+      }
+    </script>
+</body>
+</html>
 
-        let questionsList = [];
-        let currentIndex = 0;
-        let score = 0;
-        let streak = 0;
-        let timer = null;
-        let timeLeft = 30;
-        let loadingInterval = null;
-
-        const loadingMessages = [
-            "🤖 L'IA rassemble les données et forge tes questions...",
-            "⚡ Connexion aux serveurs neuronaux en cours...",
-            "🔥 Ajustement de la difficulté, prépare-toi...",
-            "✨ Analyse des pièges et génération des options..."
-        ];
-
-        function setGameMode(mode) {
-            currentGameMode = mode;
-            document.getElementById('btn-mode-solo').classList.toggle('selected', mode === 'solo');
-            document.getElementById('btn-mode-local').classList.toggle('selected', mode === 'local');
-            document.getElementById('local-players-group').classList.toggle('hidden', mode !== 'local');
-        }
-
-        function showScreen(screenId) {
-            ['setup-screen', 'pass-screen', 'loading-screen', 'quiz-screen', 'score-screen'].forEach(id => {
-                const el = document.getElementById(id);
-                if (id === screenId) {
-                    el.classList.remove('hidden');
-                    setTimeout(() => el.classList.add('active'), 10);
-                } else {
-                    el.classList.remove('active');
-                    setTimeout(() => el.classList.add('hidden'), 300);
-                }
-            });
-        }
-
-        async function startQuizSession() {
-            const category = document.getElementById('category-input').value.trim() || "Culture Générale";
-            const questionCount = document.getElementById('count-select').value;
-            const difficulty = document.getElementById('difficulty-select').value;
-
-            // Initialisation des joueurs
-            if (currentGameMode === 'local') {
-                const rawPlayers = document.getElementById('players-input').value;
-                playersList = rawPlayers.split(',').map(p => p.trim()).filter(p => p.length > 0);
-                if (playersList.length === 0) playersList = ['Joueur 1', 'Joueur 2'];
-            } else {
-                playersList = ['Joueur'];
-            }
-
-            currentPlayerIndex = 0;
-            localScores = [];
-
-            showScreen('loading-screen');
-            
-            let msgIdx = 0;
-            const msgElement = document.getElementById('loading-msg');
-            msgElement.innerText = loadingMessages[0];
-            
-            if (loadingInterval) clearInterval(loadingInterval);
-            loadingInterval = setInterval(() => {
-                msgIdx = (msgIdx + 1) % loadingMessages.length;
-                msgElement.innerText = loadingMessages[msgIdx];
-            }, 2200);
-
-            const prompt = `Génère exactement ${questionCount} questions de quiz uniques sur le thème "${category}" avec un niveau de difficulté "${difficulty}". 
-            Réponds STRICTEMENT sous forme d'un tableau JSON (aucun texte avant ou après, pas de markdown).
-            Structure attendue :
-            [
-              {
-                "question": "Énoncé de la question",
-                "options": ["Option A", "Option B", "Option C", "Option D"],
-                "answer": "Option A"
-              }
-            ]`;
-
-            try {
-                const res = await fetch(AI_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt })
-                });
-                
-                const data = await res.json();
-                let rawText = data?.result?.answer || data?.result || data?.answer || data;
-
-                if (typeof rawText === 'object') {
-                    questionsList = Array.isArray(rawText) ? rawText : (rawText.questions || []);
-                } else {
-                    let cleaned = String(rawText).replace(/```json/gi, "").replace(/```/g, "").trim();
-                    const start = cleaned.indexOf('[');
-                    const end = cleaned.lastIndexOf(']');
-                    if (start !== -1 && end !== -1) cleaned = cleaned.substring(start, end + 1);
-                    questionsList = JSON.parse(cleaned);
-                }
-
-                if (!Array.isArray(questionsList) || questionsList.length === 0) throw new Error("Format invalide");
-
-                clearInterval(loadingInterval);
-
-                if (currentGameMode === 'local') {
-                    promptNextPlayer();
-                } else {
-                    startCurrentPlayerTurn();
-                }
-
-            } catch (err) {
-                clearInterval(loadingInterval);
-                console.error("Erreur API:", err);
-                alert("L'IA a mal renvoyé la structure JSON. Clique à nouveau sur Lancer.");
-                resetToSetup();
-            }
-        }
-
-        function promptNextPlayer() {
-            const name = playersList[currentPlayerIndex];
-            document.getElementById('pass-msg').innerText = `Passe le téléphone à ${name} !\nIl va jouer la même série de questions.`;
-            showScreen('pass-screen');
-        }
-
-        function startCurrentPlayerTurn() {
-            currentIndex = 0;
-            score = 0;
-            streak = 0;
-            document.getElementById('current-player-name').innerText = playersList[currentPlayerIndex];
-            showScreen('quiz-screen');
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            if (currentIndex >= questionsList.length) {
-                endPlayerTurn();
-                return;
-            }
-
-            const q = questionsList[currentIndex];
-            document.getElementById('progress-indicator').innerText = `${currentIndex + 1} / ${questionsList.length}`;
-            document.getElementById('score-text').innerText = `Score : ${score}`;
-            document.getElementById('streak-text').innerText = `🔥 ${streak}`;
-
-            const target = document.getElementById('typed-question');
-            target.innerText = "";
-            let i = 0;
-            const fullText = q.question;
-            
-            function typeWriter() {
-                if (i < fullText.length) {
-                    target.innerText += fullText.charAt(i);
-                    i++;
-                    setTimeout(typeWriter, 15);
-                }
-            }
-            typeWriter();
-
-            const container = document.getElementById('options-container');
-            container.innerHTML = '';
-
-            q.options.forEach((opt) => {
-                const btn = document.createElement('button');
-                btn.className = 'opt-btn';
-                btn.innerText = opt;
-                btn.onclick = () => selectAnswer(opt, btn);
-                container.appendChild(btn);
-            });
-
-            startTimer();
-        }
-
-        function startTimer() {
-            clearInterval(timer);
-            timeLeft = 30;
-            const bar = document.getElementById('timer-bar');
-            bar.style.width = '100%';
-
-            timer = setInterval(() => {
-                timeLeft--;
-                bar.style.width = `${(timeLeft / 30) * 100}%`;
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    handleTimeOut();
-                }
-            }, 1000);
-        }
-
-        function selectAnswer(selected, btnElement) {
-            clearInterval(timer);
-            const q = questionsList[currentIndex];
-            const buttons = document.querySelectorAll('.opt-btn');
-            buttons.forEach(b => b.disabled = true);
-
-            const isCorrect = selected.trim().toLowerCase() === q.answer.trim().toLowerCase();
-
-            if (isCorrect) {
-                score++;
-                streak++;
-                btnElement.classList.add('correct');
-            } else {
-                streak = 0;
-                btnElement.classList.add('wrong');
-                buttons.forEach(b => {
-                    if (b.innerText.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
-                        b.classList.add('correct');
-                    }
-                });
-            }
-
-            setTimeout(() => {
-                currentIndex++;
-                loadQuestion();
-            }, 1500);
-        }
-
-        function handleTimeOut() {
-            const q = questionsList[currentIndex];
-            const buttons = document.querySelectorAll('.opt-btn');
-            buttons.forEach(b => b.disabled = true);
-            streak = 0;
-
-            buttons.forEach(b => {
-                if (b.innerText.trim().toLowerCase() === q.answer.trim().toLowerCase()) {
-                    b.classList.add('correct');
-                }
-            });
-
-            setTimeout(() => {
-                currentIndex++;
-                loadQuestion();
-            }, 1500);
-        }
-
-        function confirmQuit() {
-            if (confirm("Tu veux vraiment stopper la session ?")) {
-                clearInterval(timer);
-                endPlayerTurn();
-            }
-        }
-
-        function endPlaye
