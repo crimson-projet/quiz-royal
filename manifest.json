@@ -1,0 +1,20 @@
+{
+  "name": "Crimson Quiz",
+  "short_name": "CrimsonQuiz",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050001",
+  "theme_color": "#ff1a40",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/fluency/96/controller.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "https://img.icons8.com/fluency/512/controller.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
