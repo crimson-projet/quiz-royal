@@ -8,19 +8,16 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: radial-gradient(circle at center, #180205 0%, #050001 100%); color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; }
         
-        .container { background: rgba(15, 2, 4, 0.96); border: 2px solid #ff1a40; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 0 40px rgba(255, 26, 64, 0.25); display: flex; flex-direction: column; justify-content: space-between; min-height: 520px; position: relative; animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .container { background: rgba(15, 2, 4, 0.96); border: 2px solid #ff1a40; border-radius: 20px; padding: 22px; width: 100%; max-width: 480px; box-shadow: 0 0 40px rgba(255, 26, 64, 0.25); display: flex; flex-direction: column; justify-content: space-between; min-height: 520px; position: relative; }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        /* Animation d'entrée magique et fluide pour les écrans */
+        .screen { display: flex; flex-direction: column; flex: 1; justify-content: space-between; opacity: 0; transform: translateY(15px) scale(0.98); transition: opacity 0.4s ease, transform 0.4s ease; pointer-events: none; }
+        .screen.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+        .hidden { display: none !important; }
 
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 26, 64, 0.3); padding-bottom: 12px; margin-bottom: 15px; }
         h1 { color: #ff3355; font-size: 20px; text-shadow: 0 0 12px rgba(255, 51, 85, 0.5); letter-spacing: 0.5px; }
         .progress-badge { background: #3a000a; border: 1px solid #ff1a40; padding: 5px 12px; border-radius: 20px; font-size: 13px; color: #ff6680; font-weight: bold; }
-
-        .screen { display: flex; flex-direction: column; flex: 1; justify-content: space-between; }
-        .hidden { display: none !important; }
 
         .setup-content { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .setup-content p { color: #aa7780; font-size: 14px; line-height: 1.4; }
@@ -50,8 +47,7 @@
         .loader-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; gap: 15px; padding: 30px 0; }
         .spinner { width: 45px; height: 45px; border: 4px solid rgba(255, 26, 64, 0.2); border-top-color: #ff1a40; border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { color: #ff3355; font-size: 15px; font-weight: bold; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        .loading-text { color: #ff3355; font-size: 15px; font-weight: bold; min-height: 45px; display: flex; align-items: center; justify-content: center; padding: 0 10px; }
     </style>
 </head>
 <body>
@@ -63,7 +59,7 @@
         </div>
 
         <!-- 1. ÉCRAN CONFIGURATION -->
-        <div id="setup-screen" class="screen">
+        <div id="setup-screen" class="screen active">
             <div class="setup-content">
                 <p>Bienvenue dans l'arène Crimson. Tape n'importe quel sujet en bas pour lancer une session exclusive de 10 questions générées par l'IA.</p>
             </div>
@@ -74,15 +70,15 @@
         </div>
 
         <!-- 2. ÉCRAN CHARGEMENT AVEC MESSAGE D'ATTENTE -->
-        <div id="loading-screen" class="screen hidden">
+        <div id="loading-screen" class="screen">
             <div class="loader-screen">
                 <div class="spinner"></div>
-                <div class="loading-text" id="loading-msg">🤖 L'IA analyse et forge tes 10 questions... Patiente un instant.</div>
+                <div class="loading-text" id="loading-msg">🤖 Initialisation des serveurs...</div>
             </div>
         </div>
 
         <!-- 3. ÉCRAN DU QUIZ -->
-        <div id="quiz-screen" class="screen hidden">
+        <div id="quiz-screen" class="screen">
             <div>
                 <div class="stats-bar">
                     <span id="score-text">Score : 0</span>
@@ -104,7 +100,7 @@
         </div>
 
         <!-- 4. ÉCRAN DE FIN -->
-        <div id="score-screen" class="screen hidden" style="justify-content: center; text-align: center; gap: 20px;">
+        <div id="score-screen" class="screen" style="justify-content: center; text-align: center; gap: 20px;">
             <h2 style="color: #ff3355; font-size: 22px;">🏆 Session Terminée !</h2>
             <p id="final-score-text" style="font-size: 16px; color: #fff;"></p>
             <div class="bottom-bar" style="border: none; padding: 0;">
@@ -122,19 +118,26 @@
         let streak = 0;
         let timer = null;
         let timeLeft = 30;
+        let loadingInterval = null;
 
         const loadingMessages = [
             "🤖 L'IA rassemble les données et forge tes 10 questions...",
             "⚡ Connexion aux serveurs neuronaux en cours...",
             "🔥 Ajustement de la difficulté, prépare-toi...",
-            "✨ Presque prêt, vérification des pièges..."
+            "✨ Analyse des pièges et génération des options..."
         ];
 
         function showScreen(screenId) {
             ['setup-screen', 'loading-screen', 'quiz-screen', 'score-screen'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+                const el = document.getElementById(id);
+                if (id === screenId) {
+                    el.classList.remove('hidden');
+                    setTimeout(() => el.classList.add('active'), 10);
+                } else {
+                    el.classList.remove('active');
+                    setTimeout(() => el.classList.add('hidden'), 300);
+                }
             });
-            document.getElementById(screenId).classList.remove('hidden');
         }
 
         async function startQuizSession() {
@@ -143,11 +146,14 @@
             showScreen('loading-screen');
             
             let msgIdx = 0;
-            const msgInterval = setInterval(() => {
+            const msgElement = document.getElementById('loading-msg');
+            msgElement.innerText = loadingMessages[0];
+            
+            if (loadingInterval) clearInterval(loadingInterval);
+            loadingInterval = setInterval(() => {
                 msgIdx = (msgIdx + 1) % loadingMessages.length;
-                const el = document.getElementById('loading-msg');
-                if(el) el.innerText = loadingMessages[msgIdx];
-            }, 2500);
+                msgElement.innerText = loadingMessages[msgIdx];
+            }, 2200);
 
             const prompt = `Génère exactement 10 questions de quiz uniques sur le thème "${category}". 
             Réponds STRICTEMENT sous forme d'un tableau JSON pur (sans markdown, ni balises ```json ... ```), contenant 10 objets avec cette structure exacte :
@@ -169,7 +175,7 @@
                 let rawText = data?.result?.answer || data?.result || data?.answer || "";
                 rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
 
-                clearInterval(msgInterval);
+                clearInterval(loadingInterval);
                 questionsList = JSON.parse(rawText);
                 currentIndex = 0;
                 score = 0;
@@ -178,7 +184,7 @@
                 showScreen('quiz-screen');
                 loadQuestion();
             } catch (err) {
-                clearInterval(msgInterval);
+                clearInterval(loadingInterval);
                 console.error("Erreur génération:", err);
                 alert("Erreur de génération par l'IA. Réessaie.");
                 resetToSetup();
